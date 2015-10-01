@@ -1,0 +1,95 @@
+---
+title: "HW4"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+#1.(a)
+1:20
+#(b)
+20:1
+#part a and b are straightforward
+#(c)
+c(1:20,19:1)# create a vector which is the combination of 1:20 and 19:1
+#d
+assign("tmp",c(4,6,3))# The assignment named 'tmp' has 4,6,3 three elements. 
+tmp
+#e
+rep(tmp,10)# use rep() function to repeat 'tmp' 10 times .
+#f
+c(rep(tmp,10),4) #similar rep() function for e, but need to add one more 4
+#g
+rep(tmp,times=c(10,20,30))
+# Each elements in tmp needs to have  different repeating times, so I use 'times' to make 10 0occurrences of 4,20 occurrences of 6 and 30 occurrences of 3. 
+#2.
+x<-seq(3,6,by=.1)# First set up the x value to be a sequence from 3 to 6 with 0.1 difference.
+exp(x)*cos(x)# Then write out the formula of the equation and put x value into the equation.
+#3.
+#a
+(0.1^seq(3,36,by=3)*0.2^seq(1,34,by=3))#similar to problem 2, I just put the different  sequences into the formula.
+#b
+(2^(1:25))/(1:25)# The idea is the same as part a. And 1:25 is the same as seq(1,25),but it is easier to use 1:25. Therefore, I use 1:25 instead.
+#4.
+#a
+i<-(10:100)# create a value i from 10 to 100
+sum(i^3+4*i^2)# Put i into the formula and sum up the value the formula.
+#b
+i <- 1:25
+sum(2^i/i+3^i/i^2)# Same process of part b,I just change the value of i and put into the different formula.
+#5.
+#a
+paste("label",1:30)# Paste function works here. Paste 'lable' 30 times with number 1,2,...,30 after that. And it has one single space automatically, so I do not need to change .
+#b
+paste("fn",1:30,sep='')# The only thing that is different with part a is that I need to add sep='' so that there is no space between 'fn' and number. 
+#6
+set.seed(50)
+xVec <- sample(0:999, 250, replace=TRUE)
+yVec <- sample(0:999, 250, replace=TRUE)
+#a
+yVec[-1]-xVec[-250]# yVec[-1] means to delete the first one in yVec, so here I delete the first one of yVec and the last one of xVec. 
+#b
+sin(yVec[-250])/cos(xVec[-1])# Similar idea as part a,just change the formula
+#c
+xVec[c(-250,-249)]+2*xVec[c(-1,-250)]-xVec[c(-1,-2)]# Here I need to delete two values from xVec, so I use c( value1,value2 ) to delete two values from xVec. This also works for deleting muliple values.
+#d
+sum(exp(-xVec[-1])/(xVec[-250]+10))# Similar idea as above, plug into the formula. I just need to sum up the values of each vector.
+#7
+set.seed(50)
+xVec <- sample(0:999, 250, replace=TRUE)
+yVec <- sample(0:999, 250, replace=TRUE)
+#a
+yVec[yVec>600]# Add condition yVec>600 to find the values in yVec that larger than 600. Just need to pay attention for [], not()
+#b
+which(yVec>600)# 'Which' function can find the index of the value in yVec.
+#c
+xVec[which(yVec>600)]# After finding the index in part b, xVec[] can give the values corresponding to the indexes that are provided.
+#d
+sqrt(abs(xVec-mean(xVec)))# Here I just use sqrt,abs,mean to create the formula.
+#e
+sum( yVec>max(yVec)-200 )# yVec>max(yVec)-200 is a condition that find the values in yVec such that they are larger than the value of max(yVec)-200. Then add up all such values.
+#f
+sum(xVec%%2==0)#Find the value in xVec which mod 2 is 0.%% is for mod operator.Then sum up the values.
+#g
+xVec[order(yVec)] #Order function can retrun the index of  the increaing values.
+#h
+yVec[seq(1,250,by=3)]# seq(1,250,by=3 means the numbers 1,4,...,250. After getting the index, I can know the value in yVec.
+#8
+1+sum(cumprod(seq(2,38,by=2)/seq(3,39,by=2)))
+#cumprod is to multiple from the first to the last. For example,cumprod(1:10),we get 1       2       6      24     120     720    5040   40320  362880 3628800.So after using cumprod, I get a seires of vectors and then I just need to sum up all of these values. Just do not forget to add 1 .
+```
+
