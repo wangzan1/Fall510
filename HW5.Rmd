@@ -1,0 +1,51 @@
+---
+title: "HW5"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+```{r}
+#1
+require(ggplot2)
+data(diamonds)# import ggplot2 and diamonds data
+new_num <- diamonds[sapply(diamonds,is.numeric)]#sapply is a function that I use here to check if each column of diamonds is numerical.It can tranvesr over data and call the function for each item.  sapply(diamonds,is.numeric) returns      carat     cut   color clarity   depth   table   price       x       y       z   TRUE   FALSE   FALSE   FALSE    TRUE    TRUE    TRUE    TRUE    TRUE    TRUE .     Then use diamonds[] to get the numerical columns.
+#2
+#One important thing is that the problem itself does not say if I need to get the pairs of non-numerical variables, so I just assume that we only can use numerical variables so that I can calculate the correlation coefficient.
+#Also, according to the example in the problem, I assume that I just need to create different pairs of variables not including pairs which are combined by itself,like'x-x'.
+string=''# Create an empty string to store the string result
+for (n in 1:6)
+  {string<-c(string,c(paste(colnames(new_num[n]),colnames(new_num[(n+1):7]),sep='-')))#Use paste function to combine pairs of column names by '-'. Also, use (string,...) to add more named strings in to the series of string so that I  create a variable string including many strings which are like 'x-y'.
+  }
+string<-c(string[-1])# The first string is empty, so after creating the string variable,I get rid of the first one.
+data1=0#Same idea for the data, I want to create a series of numbers, so I create a number to store the numbers.
+for (n in 1:6)
+{ data1<-c(data1,cor(new_num[n],new_num[(n+1):7],method='pearson'))}# Similar to the string, use data1 to store each correlation numbers.
+data1<-c(data1[-1])#Similar to the string,get rid of the first one because the first one is 0.
+correlation_data<-data.frame(string,data1)# Combine string and data1 into a data.frame
+correlation_data
+#3
+mainplots<-par(mfrow=c(3,7))# par(mfrow) is to create a 3 by 7 collection of graghs together into one figure.
+num=0# here is to create a countable number so that I can output the corresponding correlation coefficient from the dataframe.
+for (i in 1:6)#two for loop to get the exact pair of column data from the new_num dataframe which has only numerical variables.
+{for (j in (i+1):7){
+num=num+1
+plot(new_num[c(i,j)], main=c(correlation_data[num,2]))}}#plot each pair of numerical datas with the title named by the corrosponding correlation coefficient.
+par(mainplots)#reset the par option
+
+
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
