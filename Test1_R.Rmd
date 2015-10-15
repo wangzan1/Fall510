@@ -1,0 +1,50 @@
+---
+title: "Test1"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+```{r}
+#1
+require(ggplot2)
+data(diamonds)
+require(plyr)# to get count function
+ratio_1<-c(count(mtcars,c("vs"))[2,2]/length(mtcars$vs))# Using count function to find the ratio of one and zero verses mtcars$vs
+ratio_0<-c(count(mtcars,c("vs"))[1,2]/length(mtcars$vs))
+true<-rep(T,times=round(length(diamonds$carat)*ratio_1))#create a string of True with number of the columns of diamonds times ratio_1 by using the repeat function. Since the number is not an integer, so I use round to get the estimated number.
+false<-rep(F,times=round(length(diamonds$carat)*ratio_0))#create a string of False with number of the columns of diamonds times ratio_0 by using the repeat function.
+diamonds<-cbind(logical_equivalent=c(true,false),diamonds)#use cbind to add the logical string into diamonds 
+#2
+new_data <- cbind(diamonds[sapply(diamonds,is.factor )],diamonds[sapply(diamonds,is.logical)])#Use sapply to find the datas which are factor and logical equivalent. Then use cbind to combine them together to get a new_data.
+#3
+cut_factor<-ggplot(new_data, aes(x=new_data[[1]]))# For each column of the new_data, I use a ggplot with bar graph and the color is gray. The lable is the corresponding column name.
+cut_factor<-cut_factor+ geom_bar(colour = 'gray')+labs(x=colnames(new_data[[1]]))
+color_factor<-ggplot(new_data, aes(x=new_data[[2]]))
+color_factor<-color_factor+ geom_bar(colour = 'gray')+labs(x=colnames(new_data[[2]]))
+clarity_factor<-ggplot(new_data, aes(x=new_data[[3]]))
+clarity_factor<-clarity_factor+ geom_bar(colour = 'gray')+labs(x=colnames(new_data[[3]]))
+logical_equivalent_factor<-ggplot(new_data, aes(x=new_data[[4]]))
+logical_equivalent_factor<-logical_equivalent_factor+ geom_bar(colour = 'gray')+labs(x=colnames(new_data[[4]]))
+
+library(gridExtra)# to use grid.arrange
+grid.arrange(cut_factor,color_factor,clarity_factor,logical_equivalent_factor)#Using grid. arrange to combine four graphs together so that I can easy to see what is going on.
+#4
+l1st=list()# create an empty list named l1st.
+for (i in 1:ncol(new_data)){ #Using for loop to get the frequency tables of each variables.
+l1st<-c(l1st,list(table(new_data[i])))}# Put these tables into one list.
+l1st
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
