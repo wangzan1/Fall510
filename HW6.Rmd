@@ -1,0 +1,149 @@
+---
+title: "HW6"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+```{r}
+require(ggplot2)
+library(grid)
+library(gridExtra)
+data(diamonds)
+require(plyr)# to get count function
+ratio_1<-c(count(mtcars,c("vs"))[2,2]/length(mtcars$vs))# Using count function to find the ratio of one and zero verses mtcars$vs
+ratio_0<-c(count(mtcars,c("vs"))[1,2]/length(mtcars$vs))
+true<-rep(T,times=round(length(diamonds$carat)*ratio_1))#create a string of True with number of the columns of diamonds times ratio_1 by using the repeat function. Since the number is not an integer, so I use round to get the estimated number.
+false<-rep(F,times=round(length(diamonds$carat)*ratio_0))#create a string of False with number of the columns of diamonds times ratio_0 by using the repeat function.
+diamonds<-cbind(logical_equivalent=c(true,false),diamonds)#use cbind to add the logical string into diamonds 
+# Here is the new diamonds data
+
+
+explore<-function(data_f,vec,corr)
+
+#'''Name the function explore, create a data frame, vector of binsizes and corrlelation. Check the homework for the detailed function for this function.'''
+  
+{
+#1
+  new_data<-data_f[which(lapply(data_f, is.numeric) == TRUE)]# Find the numerical variables in data_f, put that into new_data
+  len<-length(new_data)#the length of the new_data
+  for (j in 1:length(vec))
+  {
+   for (i in 1:len)# Here two for loop to get each binsizes and each numerical variables data so that I can plot the correspoding figures
+    {
+      MN <- mean(new_data[[i]])#find the mean value of one variable
+      bin = vec[[j]]#choose the binsize
+      p_count<- ggplot(new_data, aes(x=new_data[[i]]),environment = environment())#create a ggplot with x-axies, new_data[[i]]
+      p_count <- p_count +geom_histogram(colour = 'blue',#color is blue
+                       fill = 'blue',
+                       binwidth=bin) +
+       labs(x=colnames(new_data[i]), y="Count") +
+       labs(title=c('Density of ',colnames(new_data[i])))+
+        #here is just labels and titles
+       geom_vline(xintercept=MN, colour='red')#create a line which is the mean of that numerical variable
+       print(p_count)# plot the p_count
+      
+      p_den <- ggplot(new_data, aes(x=new_data[[i]]),environment = environment())
+      p_den <- p_den + aes(y = ..density..)+geom_histogram(colour = 'blue',#Here, the main difference between the p_count plot is that here I use density as the y-axis.
+                       fill = 'blue',
+                       binwidth=bin) +
+       labs(x=colnames(new_data[i]), y="Density") +
+       labs(title=c('Density of ',colnames(new_data[i])))+
+       geom_vline(xintercept=MN, colour='red')
+       print(p_den)
+}}
+  
+#2
+ var_factor <- data_f[which(lapply(data_f, is.factor) == TRUE)]#Find the factor variables in the data_f
+var_logical <- data_f[which(lapply(data_f, is.logical) == TRUE)]#Find the logical variables in the data_f.
+new_data1<-cbind(var_factor,var_logical)#Combine two together into one data frame.
+  for (i in 1:length(new_data1))# use for loop to plot multiple plots
+    {
+      p_fac_log <- ggplot(new_data1, aes(x=new_data1[[i]]),environment = environment())# Here, I use the ggplot two plot all the categorical and binarial variables.
+      p_fac_log <- p_fac_log+geom_bar(colour = 'grey',
+                       fill = 'grey')+labs(x=colnames(data_f[i]))+
+                       labs(title=c('data'))
+       print(p_fac_log)# plot the p_fac_log figures
+  
+  }
+#3
+r_square=c()# create an empty string to the r_square
+for (i in 1:(length(new_data)-1))# Use two for loops to create the r square of the numerical variables
+  {
+  for (j in ((i+1):length(new_data)))
+    {
+    r_square<-c(r_square,summary(lm(new_data[[i]]~new_data[[j]]))$r.squared )# lm is to find the regression line which fit the scattplot best. Thne find the r square using the forula. Store these numbers into r square.
+    }
+}
+print(r_square)
+#4
+#a
+list_cat=list()# create an empty list named list_cat.
+for (i in 1:ncol(new_data1)){ #Using for loop to get the frequency tables of each variables.
+list_cat<-c(list_cat,list(table(new_data1[i])))}# Put these tables into one list.
+print(list_cat)
+#b
+
+#1
+sum_table <- do.call(data.frame, 
+           list(mean = apply(new_data, 2, mean),
+                sd = apply(new_data, 2, sd),
+                median = apply(new_data, 2, median),
+                min = apply(new_data, 2, min),
+                max = apply(new_data, 2, max),
+                n = apply(new_data, 2, length)))#summary of the data frame with mean,sd,etc
+print(sum_table)
+
+#2
+string=''# Create an empty string to store the string result
+for (n in 1:6)
+  {string<-c(string,c(paste(colnames(new_data[n]),colnames(new_data[(n+1):7]),sep='-')))#Use paste function to combine pairs of column names by '-'. Also, use (string,...) to add more named strings in to the series of string so that I  create a variable string including many strings which are like 'x-y'.
+  }
+string<-c(string[-1])# The first string is empty, so after creating the string variable,I get rid of the first one.
+data_var_r<-data.frame(string,r_square)# create a data frame of vairable names, and r-square values
+print (data_var_r)
+
+#3
+data1=0#Same idea for the data, I want to create a series of numbers, so I create a number to store the numbers.
+for (n in 1:6)
+{ data1<-c(data1,cor(new_data[n],new_data[(n+1):7],method='pearson'))}# Similar to the string, use data1 to store each correlation numbers.
+data1<-c(data1[-1])#Similar to the string,get rid of the first one because the first one is 0.
+
+#Get the length of the one dimension of the square matrix
+
+data1=0#Same idea for the data, I want to create a series of numbers, so I create a number to store the numbers.
+for (n in 1:6)
+{ data1<-c(data1,cor(new_data[n],new_data[(n+1):7],method='pearson'))}# Similar to the string, use data1 to store each correlation numbers.
+data1<-c(data1[-1])#Similar to the string,get rid of the first one because the first one is 0.
+correlation_data<-data.frame(string,data1)# Combine string and data1 into a data.frame
+corr_a<-correlation_data
+
+
+empty<-c()
+for (i in 1:length(corr_a[,1])) {
+    #if the threshold is less or equal than the given  correlation, delete the name and value to the
+    #respective correlation vectors
+    if (abs(corr_a[i,2]) <=corr) {
+      empty<-c(empty,i)
+    corr_t<-corr_a[-(empty),]
+    }
+}
+print(corr_t)
+}
+explore(diamonds,(c(5,20,50)),0.25)
+explore(mtcars,(c(5,20,50)),0.25)
+
+```
+
+
