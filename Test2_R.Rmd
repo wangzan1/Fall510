@@ -1,0 +1,373 @@
+---
+title: "TEST2_R"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+```{r}
+
+abalone <- read.csv("http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data", header=FALSE)
+names(abalone) <- c("sex", "length", "diameter", "height", "weight.whole",
+    "weight.shucked", "weight.viscera", "weight.shell", "rings")
+#1
+num<-nrow(abalone)# get the row number of abalone data
+one_per_t<-abalone[sample(num,round(num*1/100),replace=FALSE),]
+ten_per_t<-abalone[sample(num,round(num*10/100),replace=FALSE),]
+twen_five_per_t<-abalone[sample(num,round(num*25/100),replace=FALSE),]
+fifty_per_t<-abalone[sample(num,round(num*50/100),replace=FALSE),]
+eighty_per_t<-abalone[sample(num,round(num*80/100),replace=FALSE),]
+hundred_per_t<-abalone[sample(num,round(num*100/100),replace=FALSE),]
+# use sample function to choose randomly to get the sample data with 1%,10%,25%,50%,80%,100% data of the abalone data. Round is to get the integer only.
+one_per<-one_per_t[5]
+ten_per<-ten_per_t[5]
+twen_five_per<-twen_five_per_t[5]
+fifty_per<-fifty_per_t[5]
+eighty_per<-eighty_per_t[5]
+hundred_per<-hundred_per_t[5]
+SampleMin<-c(min(one_per),min(ten_per),min(twen_five_per),min(fifty_per),min(eighty_per),min(hundred_per))# find minimum of each whole_weight sample data. 
+
+SampleMax<-c(max(one_per),max(ten_per),max(twen_five_per),max(fifty_per),max(eighty_per),max(hundred_per))# find max of each whole_weight sample data. 
+
+SampleMean<- c(colMeans(one_per),colMeans(ten_per),colMeans(twen_five_per),colMeans(fifty_per),colMeans(eighty_per),colMeans(hundred_per))# find mean value of each whole_weight sample data. 
+
+SampleVar<- c(var(one_per),var(ten_per),var(twen_five_per),var(fifty_per),var(eighty_per),var(hundred_per))# find variance of each whole_weight sample data. 
+
+
+new_data<-data.frame(SampleMin,SampleMax,SampleMean,SampleVar)#form a dataframe
+new_data<-data.frame(t(new_data))#change columns to rows
+colnames(new_data)<-c('1%','10%','25%','50%','80%','100%')#create column names
+
+#2
+require(ggplot2)
+require(grid)
+plot_value<-function(data1,i)#Here, I create a function of ggplot.
+#'''Name the function plot_value(), create two variables: data1 which is the data frame and i is the number of which column of the data.The function is to have a ggplot of the dataframe.Use two if loop to check if the data is numerical and return the plot of the data.'''
+{
+  
+if (lapply(data1[i], is.numeric) == TRUE)# Use if function to check if the data is numerical so that I can set up the bin widith.
+{  bins <- (max(data1[i])-min(data1[[i]]))/100# Get the binwidth.
+  plot <- ggplot(data1, aes(x=data1[[i]]),environment = environment())#create a geom_histogram ggplot by the data1 with column i 
+  plot <- plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +
+    labs(x=names(data1[i]))#lable its name
+return(plot)#return the plot.
+}
+if (lapply(data1[i], is.numeric) == FALSE)#If the data is not numerical, then I don't need to set up the binwidth.
+{plot1 <- ggplot(data1, aes(x=data1[[i]]),environment = environment())
+plot1 <- plot1 +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray') +
+    labs(x=names(data1[i]))
+return(plot1)#similar to the above notation, just return the plot of the data.
+}}
+library(gridExtra)# in order to use grid.arrange
+grid.arrange(plot_value(one_per_t,5),plot_value(ten_per_t,5),plot_value(twen_five_per_t,5),plot_value(fifty_per_t,5),plot_value(eighty_per_t,5),plot_value(hundred_per_t,5))#use grid arrange to combin plots into one grid
+#3
+
+mean_data<-function(data)
+#'''Name the function mean_data, which contains one variable data, and return the dataframe of the sample data. Use a for loop to select the sample and caculate the mean value of each such sample. Then put these datas into one data frame.'''
+{
+df<-data.frame(number=integer())#This is an empty data frame.
+total=0
+for (j in 1:1000){
+  number<-data[sample(nrow(data),size=1,replace=FALSE),]# use sample function to select one sample number from the data
+  total=number+total# get the total value.
+  mean=total/j#caculate the mean value.
+  df<-rbind(df,mean)#use rbind to put each mean into the data frame.
+  
+}
+return(df)}#return dataframe df
+mean_frame<-data.frame(mean_data(one_per),mean_data(ten_per),mean_data(twen_five_per),mean_data(fifty_per),mean_data(eighty_per))# put five resample data into one dataframe.
+
+colnames(mean_frame)<-c('one_per_mean','ten_per_mean','twen_five_per_mean','fifty_per_mean','eighty_per')# Name each colmun in the dataframe mean_frame
+#4
+grid.arrange(plot_value(mean_frame,1),plot_value(mean_frame,2),plot_value(mean_frame,3),plot_value(mean_frame,4),plot_value(mean_frame,5),plot_value(hundred_per_t,5))# Create another grid of histograms that contains the five columns just created and include the 100% sample use function created in problem2 plot_value
+#5
+#Similar to problem 1, here is to create the resample mean,min,max, variance of the data 
+ResampleMean<-c(colMeans(mean_frame[1]),colMeans(mean_frame[2]),colMeans(mean_frame[3]),colMeans(mean_frame[4]),colMeans(mean_frame[5]),colMeans(hundred_per))
+
+ResampleMin<-c(min(mean_frame[1]),min(mean_frame[2]),min(mean_frame[3]),min(mean_frame[4]),min(mean_frame[5]),min(hundred_per))
+
+ResampleMax<-c(max(mean_frame[1]),max(mean_frame[2]),max(mean_frame[3]),max(mean_frame[4]),max(mean_frame[5]),max(hundred_per))
+
+ResampleVar<-c(var(mean_frame[1]),var(mean_frame[2]),var(mean_frame[3]),var(mean_frame[4]),var(mean_frame[5]),var(hundred_per))
+new_data<-data.frame(SampleMin,SampleMax,SampleMean,SampleVar)
+new_data2<-data.frame(ResampleMin,ResampleMax,ResampleMean,ResampleVar)#create new_data2 to store the resample data
+Renew_data<-cbind(new_data,new_data2)#then combine two data frame together
+Renew_data<-data.frame(t(Renew_data))#change the row and column
+colnames(Renew_data)<-c('1%','10%','25%','50%','80%','100%')#create column names
+
+#6
+#similar to function in problem 2.Just add more vertical lines to show 1%,10%,25%,50%,and 80% SampleMean.
+bins <- (max(hundred_per)-min(hundred_per))/100
+  hundred_plot <- ggplot(hundred_per_t, aes(x=hundred_per_t[[5]]),environment = environment())
+  hundred_plot <- hundred_plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +geom_vline(xintercept=colMeans(one_per), colour='red')+geom_vline(xintercept=colMeans(ten_per), colour='blue')+
+    geom_vline(xintercept=colMeans(twen_five_per), colour='green')+geom_vline(xintercept=colMeans(fifty_per), colour='yellow')+geom_vline(xintercept=colMeans(eighty_per), colour='black')+
+    labs(x=names(hundred_per))#use geom_vline to create different colors of vertical lines at the point of each colMeans
+print(hundred_plot)#print the plot
+
+
+#7
+#similar to problem 6, just use the data of the resample mean in the plot. 
+bins <- (max(hundred_per)-min(hundred_per))/100
+  Re_hundred_plot <- ggplot(hundred_per_t, aes(x=hundred_per_t[[5]]),environment = environment())
+  Re_hundred_plot <- Re_hundred_plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +geom_vline(xintercept=colMeans(mean_frame[1]), colour='red')+geom_vline(xintercept=colMeans(mean_frame[2]), colour='blue')+
+    geom_vline(xintercept=colMeans(mean_frame[3]), colour='green')+geom_vline(xintercept=colMeans(mean_frame[4]), colour='yellow')+geom_vline(xintercept=colMeans(mean_frame[5]), colour='black')+
+    labs(x=names(hundred_per))
+print(Re_hundred_plot)
+
+
+#8
+#diamonds$carat
+require(ggplot2)
+data(diamonds)
+num<-nrow(diamonds)# get the row number of diamonds data
+one_per_t<-diamonds[sample(num,round(num*1/100),replace=FALSE),]
+ten_per_t<-diamonds[sample(num,round(num*10/100),replace=FALSE),]
+twen_five_per_t<-diamonds[sample(num,round(num*25/100),replace=FALSE),]
+fifty_per_t<-diamonds[sample(num,round(num*50/100),replace=FALSE),]
+eighty_per_t<-diamonds[sample(num,round(num*80/100),replace=FALSE),]
+hundred_per_t<-diamonds[sample(num,round(num*100/100),replace=FALSE),]
+# use sample function to choose randomly to get the sample data with 1%,10%,25%,50%,80%,100% data of the diamonds data. Round is to get the integer only.
+one_per<-one_per_t[1]
+ten_per<-ten_per_t[1]
+twen_five_per<-twen_five_per_t[1]
+fifty_per<-fifty_per_t[1]
+eighty_per<-eighty_per_t[1]
+hundred_per<-hundred_per_t[1]
+SampleMin<-c(min(one_per),min(ten_per),min(twen_five_per),min(fifty_per),min(eighty_per),min(hundred_per))# find minimum of each whole_weight sample data. 
+
+SampleMax<-c(max(one_per),max(ten_per),max(twen_five_per),max(fifty_per),max(eighty_per),max(hundred_per))# find max of each whole_weight sample data. 
+
+SampleMean<- c(colMeans(one_per),colMeans(ten_per),colMeans(twen_five_per),colMeans(fifty_per),colMeans(eighty_per),colMeans(hundred_per))# find mean value of each whole_weight sample data. 
+
+SampleVar<- c(var(one_per),var(ten_per),var(twen_five_per),var(fifty_per),var(eighty_per),var(hundred_per))# find variance of each whole_weight sample data. 
+
+
+new_data<-data.frame(SampleMin,SampleMax,SampleMean,SampleVar)#form a dataframe
+new_data<-data.frame(t(new_data))#change columns to rows
+colnames(new_data)<-c('1%','10%','25%','50%','80%','100%')#create column names
+
+#2
+require(ggplot2)
+require(grid)
+plot_value<-function(data1,i)#Here, I create a function of ggplot.
+#'''Name the function plot_value(), create two variables: data1 which is the data frame and i is the number of which column of the data.The function is to have a ggplot of the dataframe.Use two if loop to check if the data is numerical and return the plot of the data.'''
+{
+  
+if (lapply(data1[i], is.numeric) == TRUE)# Use if function to check if the data is numerical so that I can set up the bin widith.
+{  bins <- (max(data1[i])-min(data1[[i]]))/100# Get the binwidth.
+  plot <- ggplot(data1, aes(x=data1[[i]]),environment = environment())#create a geom_histogram ggplot by the data1 with column i 
+  plot <- plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +
+    labs(x=names(data1[i]))#lable its name
+return(plot)#return the plot.
+}
+if (lapply(data1[i], is.numeric) == FALSE)#If the data is not numerical, then I don't need to set up the binwidth.
+{plot1 <- ggplot(data1, aes(x=data1[[i]]),environment = environment())
+plot1 <- plot1 +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray') +
+    labs(x=names(data1[i]))
+return(plot1)#similar to the above notation, just return the plot of the data.
+}}
+library(gridExtra)# in order to use grid.arrange
+grid.arrange(plot_value(one_per_t,1),plot_value(ten_per_t,1),plot_value(twen_five_per_t,1),plot_value(fifty_per_t,1),plot_value(eighty_per_t,1),plot_value(hundred_per_t,1))#use grid arrange to combin plots into one grid
+#3
+
+mean_data<-function(data)
+#'''Name the function mean_data, which contains one variable data, and return the dataframe of the sample data. Use a for loop to select the sample and caculate the mean value of each such sample. Then put these datas into one data frame.'''
+{
+df<-data.frame(number=integer())#This is an empty data frame.
+total=0
+for (j in 1:1000){
+  number<-data[sample(nrow(data),size=1,replace=FALSE),]# use sample function to select one sample number from the data
+  total=number+total# get the total value.
+  mean=total/j#caculate the mean value.
+  df<-rbind(df,mean)#use rbind to put each mean into the data frame.
+  
+}
+return(df)}#return dataframe df
+mean_frame<-data.frame(mean_data(one_per),mean_data(ten_per),mean_data(twen_five_per),mean_data(fifty_per),mean_data(eighty_per))# put five resample data into one dataframe.
+
+colnames(mean_frame)<-c('one_per_mean','ten_per_mean','twen_five_per_mean','fifty_per_mean','eighty_per')# Name each colmun in the dataframe mean_frame
+#4
+grid.arrange(plot_value(mean_frame,1),plot_value(mean_frame,2),plot_value(mean_frame,3),plot_value(mean_frame,4),plot_value(mean_frame,5),plot_value(hundred_per_t,1))# Create another grid of histograms that contains the five columns just created and include the 100% sample use function created in problem2 plot_value
+#5
+#Similar to problem 1, here is to create the resample mean,min,max, variance of the data 
+ResampleMean<-c(colMeans(mean_frame[1]),colMeans(mean_frame[2]),colMeans(mean_frame[3]),colMeans(mean_frame[4]),colMeans(mean_frame[5]),colMeans(hundred_per))
+
+ResampleMin<-c(min(mean_frame[1]),min(mean_frame[2]),min(mean_frame[3]),min(mean_frame[4]),min(mean_frame[5]),min(hundred_per))
+
+ResampleMax<-c(max(mean_frame[1]),max(mean_frame[2]),max(mean_frame[3]),max(mean_frame[4]),max(mean_frame[5]),max(hundred_per))
+
+ResampleVar<-c(var(mean_frame[1]),var(mean_frame[2]),var(mean_frame[3]),var(mean_frame[4]),var(mean_frame[5]),var(hundred_per))
+new_data<-data.frame(SampleMin,SampleMax,SampleMean,SampleVar)
+new_data2<-data.frame(ResampleMin,ResampleMax,ResampleMean,ResampleVar)#create new_data2 to store the resample data
+Renew_data<-cbind(new_data,new_data2)#then combine two data frame together
+Renew_data<-data.frame(t(Renew_data))#change the row and column
+colnames(Renew_data)<-c('1%','10%','25%','50%','80%','100%')#create column names
+
+#6
+#similar to function in problem 2.Just add more vertical lines to show 1%,10%,25%,50%,and 80% SampleMean.
+bins <- (max(hundred_per)-min(hundred_per))/100
+  hundred_plot <- ggplot(hundred_per_t, aes(x=hundred_per_t[[1]]),environment = environment())
+  hundred_plot <- hundred_plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +geom_vline(xintercept=colMeans(one_per), colour='red')+geom_vline(xintercept=colMeans(ten_per), colour='blue')+
+    geom_vline(xintercept=colMeans(twen_five_per), colour='green')+geom_vline(xintercept=colMeans(fifty_per), colour='yellow')+geom_vline(xintercept=colMeans(eighty_per), colour='black')+
+    labs(x=names(hundred_per))#use geom_vline to create different colors of vertical lines at the point of each colMeans
+print(hundred_plot)#print the plot
+
+
+#7
+#similar to problem 6, just use the data of the resample mean in the plot. 
+bins <- (max(hundred_per)-min(hundred_per))/100
+  Re_hundred_plot <- ggplot(hundred_per_t, aes(x=hundred_per_t[[1]]),environment = environment())
+  Re_hundred_plot <- Re_hundred_plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +geom_vline(xintercept=colMeans(mean_frame[1]), colour='red')+geom_vline(xintercept=colMeans(mean_frame[2]), colour='blue')+
+    geom_vline(xintercept=colMeans(mean_frame[3]), colour='green')+geom_vline(xintercept=colMeans(mean_frame[4]), colour='yellow')+geom_vline(xintercept=colMeans(mean_frame[5]), colour='black')+
+    labs(x=names(hundred_per))
+print(Re_hundred_plot)
+
+
+
+
+
+#faithful$eruptions
+data(faithful)
+num<-nrow(faithful)# get the row number of faithful data
+one_per_t<-faithful[sample(num,round(num*1/100),replace=FALSE),]
+ten_per_t<-faithful[sample(num,round(num*10/100),replace=FALSE),]
+twen_five_per_t<-faithful[sample(num,round(num*25/100),replace=FALSE),]
+fifty_per_t<-faithful[sample(num,round(num*50/100),replace=FALSE),]
+eighty_per_t<-faithful[sample(num,round(num*80/100),replace=FALSE),]
+hundred_per_t<-faithful[sample(num,round(num*100/100),replace=FALSE),]
+# use sample function to choose randomly to get the sample data with 1%,10%,25%,50%,80%,100% data of the faithful data. Round is to get the integer only.
+one_per<-one_per_t[1]
+ten_per<-ten_per_t[1]
+twen_five_per<-twen_five_per_t[1]
+fifty_per<-fifty_per_t[1]
+eighty_per<-eighty_per_t[1]
+hundred_per<-hundred_per_t[1]
+SampleMin<-c(min(one_per),min(ten_per),min(twen_five_per),min(fifty_per),min(eighty_per),min(hundred_per))# find minimum of each whole_weight sample data. 
+
+SampleMax<-c(max(one_per),max(ten_per),max(twen_five_per),max(fifty_per),max(eighty_per),max(hundred_per))# find max of each whole_weight sample data. 
+
+SampleMean<- c(colMeans(one_per),colMeans(ten_per),colMeans(twen_five_per),colMeans(fifty_per),colMeans(eighty_per),colMeans(hundred_per))# find mean value of each whole_weight sample data. 
+
+SampleVar<- c(var(one_per),var(ten_per),var(twen_five_per),var(fifty_per),var(eighty_per),var(hundred_per))# find variance of each whole_weight sample data. 
+
+
+new_data<-data.frame(SampleMin,SampleMax,SampleMean,SampleVar)#form a dataframe
+new_data<-data.frame(t(new_data))#change columns to rows
+colnames(new_data)<-c('1%','10%','25%','50%','80%','100%')#create column names
+
+#2
+require(ggplot2)
+require(grid)
+plot_value<-function(data1,i)#Here, I create a function of ggplot.
+#'''Name the function plot_value(), create two variables: data1 which is the data frame and i is the number of which column of the data.The function is to have a ggplot of the dataframe.Use two if loop to check if the data is numerical and return the plot of the data.'''
+{
+  
+if (lapply(data1[i], is.numeric) == TRUE)# Use if function to check if the data is numerical so that I can set up the bin widith.
+{  bins <- (max(data1[i])-min(data1[[i]]))/100# Get the binwidth.
+  plot <- ggplot(data1, aes(x=data1[[i]]),environment = environment())#create a geom_histogram ggplot by the data1 with column i 
+  plot <- plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +
+    labs(x=names(data1[i]))#lable its name
+return(plot)#return the plot.
+}
+if (lapply(data1[i], is.numeric) == FALSE)#If the data is not numerical, then I don't need to set up the binwidth.
+{plot1 <- ggplot(data1, aes(x=data1[[i]]),environment = environment())
+plot1 <- plot1 +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray') +
+    labs(x=names(data1[i]))
+return(plot1)#similar to the above notation, just return the plot of the data.
+}}
+library(gridExtra)# in order to use grid.arrange
+grid.arrange(plot_value(one_per_t,1),plot_value(ten_per_t,1),plot_value(twen_five_per_t,1),plot_value(fifty_per_t,1),plot_value(eighty_per_t,1),plot_value(hundred_per_t,1))#use grid arrange to combin plots into one grid
+#3
+
+mean_data<-function(data)
+#'''Name the function mean_data, which contains one variable data, and return the dataframe of the sample data. Use a for loop to select the sample and caculate the mean value of each such sample. Then put these datas into one data frame.'''
+{
+df<-data.frame(number=integer())#This is an empty data frame.
+total=0
+for (j in 1:1000){
+  number<-data[sample(nrow(data),size=1,replace=FALSE),]# use sample function to select one sample number from the data
+  total=number+total# get the total value.
+  mean=total/j#caculate the mean value.
+  df<-rbind(df,mean)#use rbind to put each mean into the data frame.
+  
+}
+return(df)}#return dataframe df
+mean_frame<-data.frame(mean_data(one_per),mean_data(ten_per),mean_data(twen_five_per),mean_data(fifty_per),mean_data(eighty_per))# put five resample data into one dataframe.
+
+colnames(mean_frame)<-c('one_per_mean','ten_per_mean','twen_five_per_mean','fifty_per_mean','eighty_per')# Name each colmun in the dataframe mean_frame
+#4
+grid.arrange(plot_value(mean_frame,1),plot_value(mean_frame,2),plot_value(mean_frame,3),plot_value(mean_frame,4),plot_value(mean_frame,5),plot_value(hundred_per_t,1))# Create another grid of histograms that contains the five columns just created and include the 100% sample use function created in problem2 plot_value
+#5
+#Similar to problem 1, here is to create the resample mean,min,max, variance of the data 
+ResampleMean<-c(colMeans(mean_frame[1]),colMeans(mean_frame[2]),colMeans(mean_frame[3]),colMeans(mean_frame[4]),colMeans(mean_frame[5]),colMeans(hundred_per))
+
+ResampleMin<-c(min(mean_frame[1]),min(mean_frame[2]),min(mean_frame[3]),min(mean_frame[4]),min(mean_frame[5]),min(hundred_per))
+
+ResampleMax<-c(max(mean_frame[1]),max(mean_frame[2]),max(mean_frame[3]),max(mean_frame[4]),max(mean_frame[5]),max(hundred_per))
+
+ResampleVar<-c(var(mean_frame[1]),var(mean_frame[2]),var(mean_frame[3]),var(mean_frame[4]),var(mean_frame[5]),var(hundred_per))
+new_data<-data.frame(SampleMin,SampleMax,SampleMean,SampleVar)
+new_data2<-data.frame(ResampleMin,ResampleMax,ResampleMean,ResampleVar)#create new_data2 to store the resample data
+Renew_data<-cbind(new_data,new_data2)#then combine two data frame together
+Renew_data<-data.frame(t(Renew_data))#change the row and column
+colnames(Renew_data)<-c('1%','10%','25%','50%','80%','100%')#create column names
+
+#6
+#similar to function in problem 2.Just add more vertical lines to show 1%,10%,25%,50%,and 80% SampleMean.
+bins <- (max(hundred_per)-min(hundred_per))/100
+  hundred_plot <- ggplot(hundred_per_t, aes(x=hundred_per_t[[1]]),environment = environment())
+  hundred_plot <- hundred_plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +geom_vline(xintercept=colMeans(one_per), colour='red')+geom_vline(xintercept=colMeans(ten_per), colour='blue')+
+    geom_vline(xintercept=colMeans(twen_five_per), colour='green')+geom_vline(xintercept=colMeans(fifty_per), colour='yellow')+geom_vline(xintercept=colMeans(eighty_per), colour='black')+
+    labs(x=names(hundred_per))#use geom_vline to create different colors of vertical lines at the point of each colMeans
+print(hundred_plot)#print the plot
+
+
+#7
+#similar to problem 6, just use the data of the resample mean in the plot. 
+bins <- (max(hundred_per)-min(hundred_per))/100
+  Re_hundred_plot <- ggplot(hundred_per_t, aes(x=hundred_per_t[[1]]),environment = environment())
+  Re_hundred_plot <- Re_hundred_plot +
+        geom_histogram(colour = 'gray',
+                       fill = 'gray',binwidth=bins) +geom_vline(xintercept=colMeans(mean_frame[1]), colour='red')+geom_vline(xintercept=colMeans(mean_frame[2]), colour='blue')+
+    geom_vline(xintercept=colMeans(mean_frame[3]), colour='green')+geom_vline(xintercept=colMeans(mean_frame[4]), colour='yellow')+geom_vline(xintercept=colMeans(mean_frame[5]), colour='black')+
+    labs(x=names(hundred_per))
+print(Re_hundred_plot)
+#9
+#Sample have larger variance, but resample size have smaller variance.That makes the sample sizes have disperse plot, but resample size have the concentrated plot.The reason is that the resample size uses the mean every time to narrow down the variance of the number so that the datas are more closer to each other.
+
+
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
